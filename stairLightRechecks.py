@@ -7,7 +7,7 @@ from datetime import datetime
 # Home Assistant configuration
 HA_URL = "http://192.168.1.139:8123"
 HA_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyMGQ4ODNlM2U3NGI0NWRjOWQ1NjY1OTI4ZGViY2JiNiIsImlhdCI6MTczMjU0OTE5MiwiZXhwIjoyMDQ3OTA5MTkyfQ.OTK4S8S-FoIBj3hMaqb-8aKKcBriq54B9YmbgkgmkPk"
-LIGHT_ENTITY_ID = "switch.step_lights_switch_3"  # Replace with your stair light entity ID
+LIGHT_ENTITY_ID = "switch.step_lights_switch_1"  # Replace with your stair light entity ID
 
 def check_and_turn_on_light():
     # Only run between 9 PM and 6 AM
@@ -56,8 +56,8 @@ def check_and_turn_on_light():
         print(f"Error: {str(e)}")
 
 def main():
-    # Schedule the check to run every 10 minutes
-    schedule.every(1).minutes.do(check_and_turn_on_light)
+    # Schedule the check to run every 30 minutes
+    schedule.every(30).minutes.do(check_and_turn_on_light)
     
     # Run the scheduler
     while True:
