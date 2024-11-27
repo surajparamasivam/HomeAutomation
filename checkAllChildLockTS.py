@@ -11,10 +11,9 @@ HA_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyMGQ4ODNlM2U3NGI0NWR
 CHILD_LOCK_SWITCHES = [
     "switch.office_ts_child_lock",  # Replace with your actual switch entity IDs
     "switch.bedroom_ts_child_lock",
-    "switch.living_ts1_child_lock",
     "switch.parking_ts_right_child_lock",
-    "switch.parking_ts_left_child_lock",
-    "switch.living_ts2_child_lock"
+    "switch.parking_ts_left_child_lock"
+
 ]
 
 def check_and_enable_locks():

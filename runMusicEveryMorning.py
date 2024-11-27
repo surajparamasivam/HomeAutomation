@@ -8,13 +8,13 @@ from spotipy.oauth2 import SpotifyOAuth
 # Configuration
 HA_URL = "http://192.168.1.139:8123"
 HA_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyMGQ4ODNlM2U3NGI0NWRjOWQ1NjY1OTI4ZGViY2JiNiIsImlhdCI6MTczMjU0OTE5MiwiZXhwIjoyMDQ3OTA5MTkyfQ.OTK4S8S-FoIBj3hMaqb-8aKKcBriq54B9YmbgkgmkPk"
-TV_ENTITY_ID = "media_player.samsung_tv"  # Replace with your TV entity ID
+TV_ENTITY_ID = "media_player.samsung_cu7700_75"  # Replace with your TV entity ID
 
 # Spotify Configuration
-SPOTIFY_CLIENT_ID = 'your_spotify_client_id'
-SPOTIFY_CLIENT_SECRET = 'your_spotify_client_secret'
+SPOTIFY_CLIENT_ID = '03f5bae7bf764fbebbf86ce68b2586d4'
+SPOTIFY_CLIENT_SECRET = 'a3e55db8727d4f75b76d8eef90233922'
 SPOTIFY_REDIRECT_URI = 'http://localhost:8888/callback'
-PLAYLIST_URI = 'spotify:playlist:your_playlist_id'  # Replace with your playlist URI
+PLAYLIST_URI = 'spotify:playlist:023ZDpHY9o4NUaHjrqqEow?si=DyEYz4v1T1aXlrG2Ch54Jg'  # Replace with your playlist URI
 
 def setup_spotify():
     scope = "user-read-playback-state user-modify-playback-state"
@@ -77,7 +77,7 @@ def turn_on_tv_and_play_music():
 
 def main():
     # Schedule to run at 7 AM every day
-    schedule.every().day.at("07:00").do(turn_on_tv_and_play_music)
+    schedule.every().day.at("20:18").do(turn_on_tv_and_play_music)
     
     while True:
         schedule.run_pending()
