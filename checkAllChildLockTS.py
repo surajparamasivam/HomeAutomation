@@ -1,66 +1,35 @@
-import requests
-import schedule
-import time
-from datetime import datetime
 
-# Home Assistant API configuration
-HA_URL = "http://192.168.1.139:8123"
-HA_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyMGQ4ODNlM2U3NGI0NWRjOWQ1NjY1OTI4ZGViY2JiNiIsImlhdCI6MTczMjU0OTE5MiwiZXhwIjoyMDQ3OTA5MTkyfQ.OTK4S8S-FoIBj3hMaqb-8aKKcBriq54B9YmbgkgmkPk"
+import hassapi as hass
+import datetime
 
-# List of child lock switches to monitor
-CHILD_LOCK_SWITCHES = [
-    "switch.office_ts_child_lock",  # Replace with your actual switch entity IDs
-    "switch.bedroom_ts_child_lock",
-    "switch.parking_ts_right_child_lock",
-    "switch.parking_ts_left_child_lock"
+class ChildLockChecker(hass.Hass):
+    def initialize(self):
+        # Run every 6 hours
+        self.run_every(self.check_child_locks, 
+                      datetime.datetime.now(), 
+                      6 * 60 * 60)  # 6 hours in seconds
 
-]
+    def check_child_locks(self, kwargs):
+        # List of touch switches to check
+        touch_switches = [
+            "switch.office_ts_child_lock",  # Replace with your actual switch entity IDs
+            "switch.bedroom_ts_child_lock",
+            "switch.parking_ts_right_child_lock",
+            "switch.parking_ts_left_child_lock"
+        ]
 
-def check_and_enable_locks():
-    headers = {
-        "Authorization": f"Bearer {HA_TOKEN}",
-        "Content-Type": "application/json",
-    }
-
-    for switch_id in CHILD_LOCK_SWITCHES:
-        try:
-            # Check switch state
-            state_url = f"{HA_URL}/api/states/{switch_id}"
-            state_response = requests.get(state_url, headers=headers)
-            
-            if state_response.status_code == 200:
-                switch_state = state_response.json()['state']
+        for switch in touch_switches:
+            try:
+                # Get current child lock state
+                child_lock_state = self.get_state(f"{switch}_child_lock")
                 
-                if switch_state == 'off':
-                    # Turn on the switch if it's off
-                    payload = {
-                        "entity_id": switch_id
-                    }
-                    url = f"{HA_URL}/api/services/homeassistant/turn_on"
-                    
-                    response = requests.post(url, headers=headers, json=payload)
-                    if response.status_code == 200:
-                        print(f"{datetime.now()}: {switch_id} was off, turned it on")
-                    else:
-                        print(f"{datetime.now()}: Failed to turn on {switch_id}. Status code: {response.status_code}")
+                # If child lock is off or in unknown state, turn it on
+                if child_lock_state != "on":
+                    self.call_service("switch/turn_on", 
+                                    entity_id=f"{switch}_child_lock")
+                    self.log(f"Turned on child lock for {switch}")
                 else:
-                    print(f"{datetime.now()}: {switch_id} is already on")
-            else:
-                print(f"{datetime.now()}: Failed to get state for {switch_id}. Status code: {state_response.status_code}")
-                
-        except Exception as e:
-            print(f"{datetime.now()}: Error checking {switch_id}: {str(e)}")
-
-def main():
-    # Run immediately on startup
-    check_and_enable_locks()
-    
-    # Schedule to run every 6 hours
-    schedule.every(6).hours.do(check_and_enable_locks)
-    
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
-if __name__ == "__main__":
-    main()
+                    self.log(f"Child lock already enabled for {switch}")
+                    
+            except Exception as e:
+                self.error(f"Error checking/setting child lock for {switch}: {str(e)}")

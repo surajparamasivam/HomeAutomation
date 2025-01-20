@@ -42,6 +42,8 @@ def turn_on_tv_and_play_music():
         if response.status_code != 200:
             print(f"Failed to turn on TV. Status code: {response.status_code}")
             return
+        else:
+            print(f"{datetime.now()}: Successfully turned on TV")
 
         # Wait for TV to fully turn on
         time.sleep(20)
@@ -57,6 +59,8 @@ def turn_on_tv_and_play_music():
         if response.status_code != 200:
             print(f"Failed to switch to Spotify. Status code: {response.status_code}")
             return
+        else:
+            print(f"{datetime.now()}: Successfully switched to Spotify")
 
         # Initialize Spotify
         sp = setup_spotify()
@@ -77,7 +81,7 @@ def turn_on_tv_and_play_music():
 
 def main():
     # Schedule to run at 7 AM every day
-    schedule.every().day.at("20:18").do(turn_on_tv_and_play_music)
+    schedule.every().day.at("23:16").do(turn_on_tv_and_play_music)
     
     while True:
         schedule.run_pending()
