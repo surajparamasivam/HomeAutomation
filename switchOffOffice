@@ -1,0 +1,62 @@
+import hassapi as hass
+import datetime
+import subprocess
+
+class SwitchOffOffice(hass.Hass):
+    def initialize(self):
+        # List of switches to control when laptop is off
+        self.office_switches = [
+            "switch.office_ts_switch_1",
+            "switch.office_ts_switch_2", 
+            "switch.office_ts_switch_3",
+            "switch.office_ts_switch_4",
+            "switch.office_light"
+        ]
+
+        # Laptop IP address to ping
+        self.laptop_ip = "192.168.1.44"
+
+        # Run check every 5 minutes
+        self.run_every(self.check_laptop_state, datetime.datetime.now(), 300)  # 300 seconds = 5 minutes
+
+    def check_laptop_state(self, kwargs):
+        try:
+            # Ping the laptop IP
+            response = subprocess.run(['ping', '-n', '1', '-w', '1000', self.laptop_ip], 
+                                   stdout=subprocess.PIPE, 
+                                   stderr=subprocess.PIPE)
+            
+            if response.returncode == 0:
+                self.log("Laptop is online")
+                self.turn_on_office()
+            else:
+                self.log("Laptop is offline")
+                self.turn_off_office()
+                
+        except Exception as e:
+            self.error(f"Error checking laptop state: {str(e)}")
+            self.turn_off_office()  # Default to turning off if there's an error
+
+    def turn_off_office(self):
+        try:
+            for switch in self.office_switches:
+                if self.get_state(switch) == "on":
+                    self.turn_off(switch)
+                    self.log(f"Turned off {switch}")
+        except Exception as e:
+            self.error(f"Error turning off office switches: {str(e)}")
+
+    def turn_on_office(self):
+        try:
+            # Only turn on specific switches when laptop is on
+            switches_to_turn_on = [
+                "switch.office_light",
+                "switch.office_ts_switch_1",
+                "switch.office_ts_switch_3"
+            ]
+            for switch in switches_to_turn_on:
+                if self.get_state(switch) == "off":
+                    self.turn_on(switch)
+                    self.log(f"Turned on {switch}")
+        except Exception as e:
+            self.error(f"Error turning on office switches: {str(e)}")

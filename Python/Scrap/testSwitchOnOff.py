@@ -1,38 +1,38 @@
-import requests
-import json
+import hassapi as hass
+import datetime
 
-# Home Assistant configuration
-HA_URL = "http://192.168.1.139:8123"  # Replace with your HA address
-HA_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIyMGQ4ODNlM2U3NGI0NWRjOWQ1NjY1OTI4ZGViY2JiNiIsImlhdCI6MTczMjU0OTE5MiwiZXhwIjoyMDQ3OTA5MTkyfQ.OTK4S8S-FoIBj3hMaqb-8aKKcBriq54B9YmbgkgmkPk"  # Replace with your token
-LIGHT_ENTITY_ID = "switch.office_ts_switch_1"  # Replace with your light entity ID
-
-def turn_off_light():
-    # Headers for authentication
-    headers = {
-        "Authorization": f"Bearer {HA_TOKEN}",
-        "Content-Type": "application/json",
-    }
-    # Payload for the request
-    payload = {
-        "entity_id": LIGHT_ENTITY_ID
-    }
-
-    # API endpoint for services
-    url = f"{HA_URL}/api/services/homeassistant/turn_off"
-    print(f"Sending request to {url}")
-    print(f"Headers: {json.dumps(headers, indent=2)}")
-    print(f"Payload: {json.dumps(payload, indent=2)}")
-
-
-    try:
-        response = requests.post(url, headers=headers, json=payload)
-        print(f"Response: {response.text}")
-        if response.status_code == 200:
-            print(f"Successfully turned on {LIGHT_ENTITY_ID}")
-        else:
-            print(f"Failed to turn off light. Status code: {response.status_code}")
-    except Exception as e:
-        print(f"Error: {str(e)}")
-
-if __name__ == "__main__":
-    turn_off_light()
+class SwitchMonitor(hass.Hass):
+    def initialize(self):
+        # Run check every minute
+        time = datetime.time(0, 0, 0)  # Start at midnight
+        self.run_minutely(self.check_switch_state, time)
+        
+        # Define the switch entity ID you want to monitor
+        self.monitored_switch = "light.office_light"  # Replace with actual switch ID
+        
+        # Define the switch that needs to be controlled
+        self.controlled_switch = "switch.office_ts_switch_3"  # Replace with actual switch ID
+        
+    def check_switch_state(self, kwargs):
+        try:
+            # Get current state of the monitored switch
+            switch_state = self.get_state(self.monitored_switch)
+            self.log(f"Current state of {self.monitored_switch}: {switch_state}")
+            
+            # Add your logic here to determine when to turn on the controlled switch
+            # For example, turn on controlled switch if monitored switch is off
+            if switch_state == "off":
+                self.turn_on_controlled_switch()
+                
+        except Exception as e:
+            self.error(f"Error checking switch state: {str(e)}")
+            
+    def turn_on_controlled_switch(self):
+        try:
+            # Turn on the controlled switch
+            self.call_service("switch/turn_on",
+                            entity_id=self.controlled_switch)
+            self.log(f"Turned on {self.controlled_switch}")
+            
+        except Exception as e:
+            self.error(f"Error turning on switch: {str(e)}")
